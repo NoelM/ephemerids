@@ -1,0 +1,9 @@
+[package]
+name = "ephemerids"
+version = "0.1.0"
+authors = ["NoelM <1353209+NoelM@users.noreply.github.com>"]
+edition = "2020"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
