@@ -1,5 +1,5 @@
 [package]
-name = "ephemerids"
+name = "ephemeris"
 version = "0.1.0"
 authors = ["NoelM <1353209+NoelM@users.noreply.github.com>"]
 edition = "2018"
