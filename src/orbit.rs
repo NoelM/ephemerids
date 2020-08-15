@@ -1,8 +1,8 @@
 pub struct Orbit {
-    pub period: f32,
-    pub semimajor_axis: f32,
-    pub eccentricity: f32,
-    pub reference_time: f32,
+    pub period: f64,
+    pub semimajor_axis: f64,
+    pub eccentricity: f64,
+    pub reference_time: f64,
     /*
     inclination: f64,
     ascending_node: f64,
