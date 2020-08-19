@@ -1,3 +1,4 @@
+#[derive(Copy, Clone)]
 pub struct Orbit {
     pub period: f64,
     pub semimajor_axis: f64,
@@ -11,3 +12,8 @@ pub struct Orbit {
     */
 }
 
+#[derive(Copy, Clone)]
+pub struct OrbitCourse {
+    pub true_anomaly: f64,
+    pub mean_anomaly: f64,
+}
