@@ -1,25 +1,17 @@
-use crate::position::get_position_from_orbit_course;
+use chrono::{DateTime, Utc};
 
 mod orbit;
 mod position;
 mod predictor;
+mod utils;
 
 fn main() {
-    let earth_orbit = orbit::Orbit {
-        period: 365.256363004 * 86400.0,
-        semimajor_axis: 149.6 * 10.0_f64.powi(6),
-        eccentricity: 0.01,
-        reference_time: 0.0,
-    };
+    let now: DateTime<Utc> = Utc::now();
+    let orbits = orbit::load_orbit_parameters_database("orbits.csv").unwrap();
 
-    let mut earth_orbit_predictor = predictor::build_predictor(earth_orbit);
-
-    // Predict position at 1 day after the first one
-    let orbit_course = earth_orbit_predictor.predict_at(86400.0);
-    let position = get_position_from_orbit_course(earth_orbit, orbit_course);
-    print!(
-        "r = {rho} km\nt = {theta} rad",
-        rho = position.rho,
-        theta = position.theta
-    );
+    for orbit in orbits.into_iter() {
+        let orbit_now = orbit.update_parameters_at(now);
+        let mut predictor = predictor::build_predictor(orbit_now);
+        let mut orbit_course = predictor.predict();
+    }
 }
