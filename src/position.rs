@@ -5,23 +5,27 @@ pub fn get_position_from_orbit_course(
     orbit: OrbitParameters,
     orbit_course: OrbitCourse,
 ) -> Position {
-    let rho = orbit.semi_major_axis * (1.0 - orbit.eccentricity * orbit_course.true_anomaly.cos());
-
-    let cos_theta = (orbit_course.true_anomaly.cos() - orbit.eccentricity)
-        / (1.0 - orbit.eccentricity * orbit_course.true_anomaly.cos());
-    let theta = cos_theta.acos() * orbit_course.true_anomaly.sin().signum();
+    let x_peri = orbit.semi_major_axis * (orbit_course.true_anomaly.cos() - orbit.eccentricity);
+    let y_peri = orbit.semi_major_axis
+        * (1.0 - orbit.eccentricity.powi(2)).sqrt()
+        * orbit_course.true_anomaly.sin();
+    let omega = orbit.long_peri - orbit.long_asc_node;
+    let cap_omega = orbit.long_asc_node;
+    let inc = orbit.inclination;
 
     return Position {
-        rho,
-        theta,
-        phi: 0.0,
+        x: (omega.cos() * cap_omega.cos() - omega.sin() * cap_omega.sin() * inc.cos()) * x_peri
+            + (-omega.sin() * cap_omega.cos() - omega.cos() * cap_omega.sin() * inc.cos()) * y_peri,
+        y: (omega.cos() * cap_omega.sin() + omega.sin() * cap_omega.cos() * inc.cos()) * x_peri
+            + (-omega.sin() * cap_omega.sin() + omega.cos() * cap_omega.cos() * inc.cos()) * y_peri,
+        z: (omega.sin() * inc.sin()) * x_peri + (omega.cos() * inc.sin()) * y_peri,
     };
 }
 
 pub struct Position {
-    pub rho: f64,
-    pub theta: f64,
-    pub phi: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 impl Position {
