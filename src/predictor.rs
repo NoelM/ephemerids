@@ -3,8 +3,9 @@ use crate::orbit::OrbitParameters;
 
 pub fn build_predictor(orbit: OrbitParameters) -> Predictor {
     return Predictor {
-        orbit,
+        orbit: orbit.clone(),
         orbit_course: OrbitCourse {
+            object_name: orbit.clone().object_name,
             true_anomaly: 0.0,
             mean_anomaly: 0.0,
         },
@@ -21,7 +22,7 @@ impl Predictor {
         self.orbit_course.mean_anomaly = self.orbit.mean_longitude - self.orbit.long_peri;
         self.orbit_course.true_anomaly = self.converge(100, 0.001);
 
-        return self.orbit_course;
+        return self.orbit_course.clone();
     }
 
     fn fx(&self, true_anomaly: f64) -> f64 {

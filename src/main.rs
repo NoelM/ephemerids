@@ -11,7 +11,14 @@ fn main() {
 
     for orbit in orbits.into_iter() {
         let orbit_now = orbit.update_parameters_at(now);
-        let mut predictor = predictor::build_predictor(orbit_now);
-        let mut orbit_course = predictor.predict();
+        let mut predictor = predictor::build_predictor(orbit_now.clone());
+        let orbit_course = predictor.predict();
+        let pos = position::get_position_from_orbit_course(orbit_now, orbit_course.clone());
+        print!(
+            "Object: {object_name}\nR = {rho} UA\nTheta: {theta}\n\n",
+            object_name = orbit_course.object_name,
+            rho = pos.rho,
+            theta = pos.theta
+        );
     }
 }

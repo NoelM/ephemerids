@@ -73,8 +73,9 @@ impl OrbitParameters {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct OrbitCourse {
+    pub object_name: String,
     pub true_anomaly: f64,
     pub mean_anomaly: f64,
 }
@@ -82,13 +83,13 @@ pub struct OrbitCourse {
 pub fn load_orbit_parameters_database(
     file_path: &str,
 ) -> Result<Vec<OrbitParameters>, Box<dyn Error>> {
-    let file = File::open("orbits.csv")?;
+    let file = File::open(file_path)?;
     let mut rdr = csv::Reader::from_reader(file);
     let mut orbits: Vec<OrbitParameters> = vec![];
     for result in rdr.deserialize() {
         // Notice that we need to provide a type hint for automatic
         // deserialization.
-        let orbit: OrbitParameters = result?;
+        let orbit = result?;
         orbits.push(orbit);
     }
     Ok(orbits)
