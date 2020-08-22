@@ -50,7 +50,7 @@ mod deg_to_rad {
         D: Deserializer<'de>,
     {
         let deg = f64::deserialize(deserializer)?;
-        let rad = modulo_2pi(2.0 * std::f64::consts::PI * deg / 360.0);
+        let rad = 2.0 * std::f64::consts::PI * deg / 360.0;
         Ok(rad)
     }
 }
@@ -58,15 +58,14 @@ mod deg_to_rad {
 impl OrbitParameters {
     pub fn update_parameters_at(self, date: DateTime<Utc>) -> OrbitParameters {
         let duration: Duration = date.signed_duration_since(self.reference_time);
-        let centuries: f64 =
-            (duration.num_days() as f64 + duration.num_hours() as f64 / 24.0) / 36525.0;
+        let centuries: f64 = duration.num_hours() as f64 / 24.0 / 36525.0;
         return OrbitParameters {
             semi_major_axis: self.semi_major_axis + self.semi_major_axis_dot * centuries,
             eccentricity: self.eccentricity + self.eccentricity_dot * centuries,
-            inclination: modulo_2pi(self.inclination + self.inclination_dot * centuries),
-            mean_longitude: modulo_2pi(self.mean_longitude + self.mean_longitude_dot * centuries),
-            long_peri: modulo_2pi(self.long_peri + self.long_peri_dot * centuries),
-            long_asc_node: modulo_2pi(self.long_asc_node + self.long_asc_node_dot * centuries),
+            inclination: self.inclination + self.inclination_dot * centuries,
+            mean_longitude: self.mean_longitude + self.mean_longitude_dot * centuries,
+            long_peri: self.long_peri + self.long_peri_dot * centuries,
+            long_asc_node: self.long_asc_node + self.long_asc_node_dot * centuries,
             reference_time: date,
             ..self.clone()
         };
