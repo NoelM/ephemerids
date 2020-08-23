@@ -67,7 +67,7 @@ impl Predictor {
         self.steps = max_step;
         for step in 0..max_step {
             true_anomaly_next = self.halley_step(true_anomaly);
-            self.epsilon = (true_anomaly_next - true_anomaly).abs() / true_anomaly;
+            self.epsilon = ((true_anomaly_next - true_anomaly) / true_anomaly).abs();
             if self.epsilon < stop_epsilon {
                 self.steps = step + 1;
                 break;
