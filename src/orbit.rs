@@ -67,6 +67,18 @@ impl OrbitParameters {
             ..self.clone()
         };
     }
+
+    pub fn get_orbit_box(&self, mult: f64) -> ([f64; 4], f64) {
+        return (
+            [
+                -self.semi_major_axis * self.eccentricity * mult, // x0
+                0.0,                                              // y0
+                2.0 * self.semi_major_axis * self.inclination.cos() * mult, // width, w/ projection
+                2.0 * self.semi_major_axis * (1.0 - self.eccentricity) * mult, // height
+            ],
+            -self.long_peri, // rotation around z
+        );
+    }
 }
 
 #[derive(Clone)]
