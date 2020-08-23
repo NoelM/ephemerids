@@ -6,8 +6,6 @@ use chrono::{DateTime, Duration, Utc};
 use csv;
 use serde::Deserialize;
 
-use crate::utils::modulo_2pi;
-
 #[derive(Debug, Deserialize, Clone)]
 pub struct OrbitParameters {
     pub object_name: String,
@@ -35,7 +33,6 @@ pub struct OrbitParameters {
 }
 
 mod deg_to_rad {
-    use crate::utils::modulo_2pi;
     use serde::{self, Deserialize, Deserializer};
 
     // The signature of a deserialize_with function must follow the pattern:
@@ -74,13 +71,12 @@ impl OrbitParameters {
 
 #[derive(Clone)]
 pub struct OrbitCourse {
-    pub object_name: String,
     pub true_anomaly: f64,
     pub mean_anomaly: f64,
 }
 
 pub fn load_orbit_parameters_database(
-    file_path: &str,
+    file_path: String,
 ) -> Result<Vec<OrbitParameters>, Box<dyn Error>> {
     let file = File::open(file_path)?;
     let mut rdr = csv::Reader::from_reader(file);
@@ -92,4 +88,15 @@ pub fn load_orbit_parameters_database(
         orbits.push(orbit);
     }
     Ok(orbits)
+}
+
+pub fn update_orbit_parameters_database_at(
+    orbits: Vec<OrbitParameters>,
+    date: DateTime<Utc>,
+) -> Vec<OrbitParameters> {
+    let mut orbits_updated: Vec<OrbitParameters> = vec![];
+    for o in orbits.into_iter() {
+        orbits_updated.push(o.update_parameters_at(date));
+    }
+    return orbits_updated;
 }

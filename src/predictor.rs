@@ -1,28 +1,44 @@
-use super::orbit::OrbitCourse;
+use crate::orbit::OrbitCourse;
 use crate::orbit::OrbitParameters;
+use crate::position::{compute_position_from_orbit_course, Position};
 
 pub fn build_predictor(orbit: OrbitParameters) -> Predictor {
     return Predictor {
         orbit: orbit.clone(),
         orbit_course: OrbitCourse {
-            object_name: orbit.clone().object_name,
             true_anomaly: 0.0,
             mean_anomaly: 0.0,
         },
+        steps: 0,
+        epsilon: f64::INFINITY,
     };
 }
 
 pub struct Predictor {
     orbit: OrbitParameters,
     orbit_course: OrbitCourse,
+    steps: u32,
+    epsilon: f64,
 }
 
 impl Predictor {
-    pub fn predict(&mut self) -> OrbitCourse {
-        self.orbit_course.mean_anomaly = self.orbit.mean_longitude - self.orbit.long_peri;
-        self.orbit_course.true_anomaly = self.converge(100, 0.001);
+    pub fn get_object_name(&self) -> String {
+        self.orbit.object_name.clone()
+    }
 
-        return self.orbit_course.clone();
+    pub fn get_steps(&self) -> u32 {
+        self.steps.clone()
+    }
+
+    pub fn get_epsilon(&self) -> f64 {
+        self.epsilon.clone()
+    }
+
+    pub fn predict(&mut self) -> Position {
+        self.orbit_course.mean_anomaly = self.orbit.mean_longitude - self.orbit.long_peri;
+        self.orbit_course.true_anomaly = self.converge(100, 0.0001);
+
+        return compute_position_from_orbit_course(self.orbit.clone(), self.orbit_course.clone());
     }
 
     fn fx(&self, true_anomaly: f64) -> f64 {
@@ -44,13 +60,16 @@ impl Predictor {
         return self.orbit.eccentricity * true_anomaly.sin();
     }
 
-    fn converge(&self, max_step: u32, stop_epsilon: f64) -> f64 {
+    fn converge(&mut self, max_step: u32, stop_epsilon: f64) -> f64 {
         let mut true_anomaly = self.orbit_course.mean_anomaly;
         let mut true_anomaly_next = 0.0;
 
-        for _ in 0..max_step {
+        self.steps = max_step;
+        for step in 0..max_step {
             true_anomaly_next = self.halley_step(true_anomaly);
-            if (true_anomaly_next - true_anomaly).abs() / true_anomaly < stop_epsilon {
+            self.epsilon = (true_anomaly_next - true_anomaly).abs() / true_anomaly;
+            if self.epsilon < stop_epsilon {
+                self.steps = step + 1;
                 break;
             }
             true_anomaly = true_anomaly_next;

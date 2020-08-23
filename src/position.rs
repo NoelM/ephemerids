@@ -1,7 +1,7 @@
 use super::orbit::OrbitCourse;
 use super::orbit::OrbitParameters;
 
-pub fn get_position_from_orbit_course(
+pub fn compute_position_from_orbit_course(
     orbit: OrbitParameters,
     orbit_course: OrbitCourse,
 ) -> Position {
@@ -14,6 +14,7 @@ pub fn get_position_from_orbit_course(
     let inc = orbit.inclination;
 
     return Position {
+        object_name: orbit.object_name,
         x: (omega.cos() * cap_omega.cos() - omega.sin() * cap_omega.sin() * inc.cos()) * x_peri
             + (-omega.sin() * cap_omega.cos() - omega.cos() * cap_omega.sin() * inc.cos()) * y_peri,
         y: (omega.cos() * cap_omega.sin() + omega.sin() * cap_omega.cos() * inc.cos()) * x_peri
@@ -23,18 +24,8 @@ pub fn get_position_from_orbit_course(
 }
 
 pub struct Position {
+    pub object_name: String,
     pub x: f64,
     pub y: f64,
     pub z: f64,
-}
-
-impl Position {
-    fn set_position_from_orbit_course(
-        &mut self,
-        orbit: OrbitParameters,
-        orbit_course: OrbitCourse,
-    ) {
-        let pos = get_position_from_orbit_course(orbit, orbit_course);
-        *self = pos;
-    }
 }
