@@ -69,12 +69,14 @@ impl OrbitParameters {
     }
 
     pub fn get_orbit_box(&self, mult: f64) -> ([f64; 4], f64) {
+        let w = 2.0 * self.semi_major_axis * mult;
+        let h = 2.0 * self.semi_major_axis * (1.0 - self.eccentricity.powi(2)).sqrt() * mult;
         return (
             [
-                -self.semi_major_axis * self.eccentricity * mult, // x0
-                0.0,                                              // y0
-                2.0 * self.semi_major_axis * self.inclination.cos() * mult, // width, w/ projection
-                2.0 * self.semi_major_axis * (1.0 - self.eccentricity) * mult, // height
+                self.semi_major_axis * self.eccentricity * mult - w / 2.0,
+                -h / 2.0,
+                w,
+                h,
             ],
             -self.long_peri, // rotation around z
         );

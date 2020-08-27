@@ -13,6 +13,7 @@ use crate::position::Position;
 use crate::predictor::build_predictor;
 
 use glutin_window::GlutinWindow as Window;
+use nalgebra::{Point2, Rotation2};
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent};
@@ -35,6 +36,7 @@ impl App {
         const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
         const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
         const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+        const MULT: f64 = 30.0;
 
         let (x, y) = (args.window_size[0] / 2.0, args.window_size[1] / 2.0);
 
@@ -44,26 +46,22 @@ impl App {
 
             // Draw a box rotating around the middle of the screen.
             for i in 0..orbits.len() {
-                let (rect, angle) = orbits[i].get_orbit_box(10.0);
+                let (rect, angle) = orbits[i].get_orbit_box(MULT);
                 circle_arc(
                     GREEN,
                     1.0,
                     0.0,
                     6.28,
                     rect,
-                    c.transform
-                        .trans(x, y)
-                        .rot_rad(angle)
-                        .trans(-rect[2] / 2.0, -rect[3] / 2.0),
+                    c.transform.trans(x, y).rot_rad(angle),
                     gl,
                 );
                 ellipse(
                     WHITE,
                     [0.0, 0.0, 7.0, 7.0],
                     c.transform
-                        .trans(x - 3.5, y - 3.5)
-                        .rot_rad(angle)
-                        .trans(-10.0 * positions[i].x, -10.0 * positions[i].y),
+                        .trans(x, y)
+                        .trans(-MULT * positions[i].x - 3.5, -MULT * positions[i].y - 3.5),
                     gl,
                 );
             }
