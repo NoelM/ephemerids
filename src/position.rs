@@ -1,3 +1,5 @@
+use core::ops;
+
 use super::orbit::OrbitCourse;
 use super::orbit::OrbitParameters;
 
@@ -34,4 +36,17 @@ pub struct Position {
     pub x: f64,
     pub y: f64,
     pub z: f64,
+}
+
+impl<'a, 'b> ops::Sub<&'b Position> for &'a Position {
+    type Output = Position;
+
+    fn sub(self, other: &'b Position) -> Position {
+        return Position {
+            object_name: self.object_name.clone(),
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z
+        }
+    }
 }

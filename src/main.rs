@@ -1,6 +1,7 @@
 mod orbit;
 mod position;
 mod predictor;
+mod projector;
 
 use chrono::Utc;
 use std::error::Error;
@@ -13,7 +14,10 @@ use crate::position::Position;
 use crate::predictor::build_predictor;
 
 use clap::{App, Arg};
+use std::collections::HashMap;
+use crate::projector::translate_to_earth;
 
+/*
 use glutin_window::GlutinWindow as Window;
 use nalgebra::{Point2, Rotation2};
 use opengl_graphics::{GlGraphics, OpenGL};
@@ -69,7 +73,7 @@ impl App {
             }
         });
     }
-}
+}*/
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = App::new("ephemeris")
@@ -93,19 +97,42 @@ fn main() -> Result<(), Box<dyn Error>> {
     let updated_orbits_params =
         update_orbit_parameters_database_at(orbits_params, Utc::now());
 
-    let mut positions: Vec<Position> = vec![];
-    for orb in updated_orbits_params.clone().into_iter() {
-        let mut prd = build_predictor(orb);
-        positions.push(prd.predict().clone());
+    let mut position_map: HashMap<String, Position> = HashMap::new();
+    for orbit in updated_orbits_params.clone().into_iter() {
+        let mut predictor = build_predictor(orbit);
+        let position = predictor.predict();
+        position_map.insert(position.object_name.clone(), position.clone());
         print!(
             "{planet}: {steps} steps, {epsilon}\n",
-            planet = prd.get_object_name(),
-            steps = prd.get_steps(),
-            epsilon = prd.get_epsilon()
-        );
+            planet = predictor.get_object_name(),
+            steps = predictor.get_steps(),
+            epsilon = predictor.get_epsilon()
+        )
     }
 
-    let opengl = OpenGL::V3_2;
+    for elem in position_map.clone().into_iter() {
+        print!(
+            "{planet}: ({x}, {y}, {z})\n",
+            planet = elem.0,
+            x = elem.1.x,
+            y = elem.1.y,
+            z = elem.1.z,
+        )
+    }
+
+    let from_earth_position = translate_to_earth(position_map);
+
+    print!("From Earth \n\n");
+    for elem in from_earth_position.clone().into_iter() {
+        print!(
+            "{planet}: ({x}, {y}, {z})\n",
+            planet = elem.0,
+            x = elem.1.x,
+            y = elem.1.y,
+            z = elem.1.z,
+        )
+    }
+    /*let opengl = OpenGL::V3_2;
 
     // Create an Glutin window.
     let mut window: Window = WindowSettings::new("Ephemeris — 0.1.0", [1024, 1024])
@@ -125,7 +152,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if let Some(args) = e.render_args() {
             app.render(&args, orbits_updated.clone(), positions.clone());
         }
-    }
+    }*/
 
     Ok(())
 }
