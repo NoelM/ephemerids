@@ -12,6 +12,8 @@ use crate::orbit::{
 use crate::position::Position;
 use crate::predictor::build_predictor;
 
+use clap::{App, Arg};
+
 use glutin_window::GlutinWindow as Window;
 use nalgebra::{Point2, Rotation2};
 use opengl_graphics::{GlGraphics, OpenGL};
@@ -19,7 +21,7 @@ use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent};
 use piston::window::WindowSettings;
 
-pub struct App {
+pub struct WindowApp {
     gl: GlGraphics, // OpenGL drawing backend.
     rotation: f64,  // Rotation for the square.
 }
@@ -70,11 +72,29 @@ impl App {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let orbits_database = load_orbit_parameters_database("orbits.csv".to_string())?;
-    let orbits_updated = update_orbit_parameters_database_at(orbits_database, Utc::now());
+    let matches = App::new("ephemeris")
+        .version("0.2.0")
+        .about("Computes stars and planets ephemeris")
+        .author("Noël Martin")
+        .arg(Arg::new("orbits-db")
+            .short('d')
+            .long("orbits-db")
+            .value_name("FILE")
+            .about("Planets orbits DB file")
+            .takes_value(true)
+            .required(true)
+        )
+        .get_matches();
+
+    let orbit_db_filename = matches.value_of("orbits-db").unwrap();
+    let orbits_params =
+        load_orbit_parameters_database(orbit_db_filename.to_string())?;
+
+    let updated_orbits_params =
+        update_orbit_parameters_database_at(orbits_params, Utc::now());
 
     let mut positions: Vec<Position> = vec![];
-    for orb in orbits_updated.clone().into_iter() {
+    for orb in updated_orbits_params.clone().into_iter() {
         let mut prd = build_predictor(orb);
         positions.push(prd.predict().clone());
         print!(
@@ -95,7 +115,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap();
 
     // Create a new game and run it.
-    let mut app = App {
+    let mut app = WindowApp {
         gl: GlGraphics::new(opengl),
         rotation: 0.0,
     };
